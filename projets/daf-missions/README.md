@@ -1,4 +1,6 @@
-# Projet DAF-MISSIONS — Reporting 360° des dépenses de missions
+# Projet DAF-MISSIONS — Reporting financier et audit automatisé des missions
+
+*Vue SQL Oracle complexe (11 CTEs) pour le contrôle de gestion des déplacements professionnels.*
 
 ## Contexte
 
@@ -181,3 +183,39 @@ SUM(CASE WHEN typ.TEM_PERSONNEL = 'O'
 | 21/11/2025 | Retour DAF : bug d'agrégation inter-années identifié |
 | Fin 11/2025 | Refonte complète → 2 vues structurantes (cumul + détail) |
 | 12/2025 | Validation métier DAF, passage en production |
+
+---
+
+## Notes techniques
+
+### Performance d'une vue à 11 CTE
+
+La vue cumul joint 11 CTE par `LEFT JOIN` sur `ID_MISSION`. On pourrait
+s'attendre à un coût élevé, mais en pratique :
+
+- **Volume modéré** : ~3 000 missions/an, ~8 000 trajets → temps de réponse < 2s
+- **Index sur ID_MISSION** : chaque table source (BUDGET, TRAJET, TRANSPORTS,
+  AVANCES...) est indexée sur `ID_MISSION` (FK), ce qui permet à Oracle
+  d'utiliser des hash joins efficaces sur les CTE
+- **Pré-agrégation dans les CTE** : chaque CTE réduit les lignes *avant*
+  la jointure finale (1 ligne/mission), ce qui limite le produit cartésien
+- **Filtre `TEM_VALIDE = 'O'`** dans chaque CTE, réduisant les volumes
+  dès l'entrée
+
+Si le volume augmentait significativement (> 50 000 missions), une **vue
+matérialisée** avec refresh nocturne serait envisageable, mais non justifiée
+à ce stade.
+
+### Pourquoi une vue monolithique (et pas N vues modulaires) ?
+
+ReportServer consomme **une seule source** par rapport. Découper la vue en
+sous-vues forcerait des jointures côté outil de reporting (non supporté)
+ou un modèle en étoile avec des rapports multiples.
+
+Le choix d'une vue unique est un **compromis assumé** : maintenance plus
+lourde côté SQL, mais exploitation immédiate côté DAF (un seul SELECT,
+filtrable par exercice, état, payeur, dates).
+
+En contrepartie, la vue est structurée en **blocs CTE clairement séparés
+et commentés**. Modifier le calcul des indemnités = modifier uniquement
+la CTE `Indemnites_Etranger_Agg`, sans toucher au reste.
