@@ -31,18 +31,18 @@ La vue historique existante (`LISTE_DONNEES_AGENTS`) présentait :
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Vue V_AGENTS_QVT                          │
-│                                                              │
-│  CTE 1: lda ──────── Identité + dédoublonnage (ROW_NUMBER) │
+│                    Vue V_AGENTS_QVT                         │
+│                                                             │
+│  CTE 1: lda ──────── Identité + dédoublonnage (ROW_NUMBER)  │
 │  CTE 2: ids ──────── Correspondance ID interne              │
 │  CTE 3: mail ─────── Email unique sécurisé                  │
-│  CTE 4: contrat_av ─ Fin effective par avenant               │
-│  CTE 5: cc ────────── Contrat principal (actif prioritaire)  │
+│  CTE 4: contrat_av ─ Fin effective par avenant              │
+│  CTE 5: cc ────────── Contrat principal (actif prioritaire) │
 │  CTE 6: fp ────────── Première position (date d'entrée)     │
 │  CTE 7: lp ────────── Dernière fin de position (sortie)     │
-│  CTE 8: ap ────────── Positions actives aujourd'hui          │
+│  CTE 8: ap ────────── Positions actives aujourd'hui         │
 │  CTE 9: heberges ─── Hébergés actifs (à exclure)            │
-│                                                              │
+│                                                             │
 │  → base ─── Assemblage + calcul D_ENTREE / D_SORTIE         │
 │  → SELECT FINAL ─── 1 ligne/agent, 10 colonnes, filtré      │
 └─────────────────────────────────────────────────────────────┘
@@ -130,7 +130,7 @@ UPPER(TRANSLATE(
 ```sql
 CASE
     WHEN INSTR(email, '@') = 0
-        THEN LOWER(email) || '@uha.fr'
+        THEN LOWER(email) || '@uha.fr'  -- TODO: paramétrer le domaine
     ELSE LOWER(email)
 END AS EMAIL
 ```
@@ -175,3 +175,27 @@ ORDER BY
 |---|---|
 | 12/2024 | Création initiale (v1.0) |
 | 12/2025 | Correction bug DATE_SORTIE — fins anticipées (v1.1) |
+
+---
+
+## Notes techniques
+
+### Couplage aux règles métier RH
+
+Cette vue est **fortement couplée** aux règles RH actuelles : définition
+d'un hébergé, logique de date d'entrée/sortie, périmètre des positions
+actives. Si ces règles changent (ex: redéfinition du statut "hébergé"),
+la vue doit être modifiée.
+
+Ce couplage est assumé : la vue est spécifique à un besoin QVT précis,
+validé par la DRH. Chaque règle est isolée dans un CTE dédié (`heberges_actifs`,
+`contrat_av_fin`, `ap`...), ce qui limite l'impact d'une modification
+à un seul bloc.
+
+### Domaine email en dur
+
+Le suffixe `@uha.fr` est codé directement dans la CTE `mail`. C'est une
+simplification acceptable pour un établissement unique. Pour un déploiement
+multi-établissements ou en cas de fusion, ce domaine devrait provenir
+d'une table de paramétrage ou d'une variable de contexte Oracle
+(`SYS_CONTEXT`).
