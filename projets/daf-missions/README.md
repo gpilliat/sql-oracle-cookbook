@@ -32,14 +32,14 @@ uniquement en restitution pour la lecture métier.
 
 ```
 ┌────────────────────────────────┐
-│ Schéma applicatif (R/W)       │  15+ tables métier
+│ Schéma applicatif (R/W)        │  15+ tables métier
 │                                │  (missions, trajets, transports,
 │                                │   budget, indemnités, avances...)
 └──────────────┬─────────────────┘
                │
                ▼
 ┌────────────────────────────────┐
-│ Schéma lecture seule (R/O)    │  2 vues pivot
+│ Schéma lecture seule (R/O)     │  2 vues pivot
 │                                │
 │  VUE_MISSIONS_CUMUL            │  1 ligne = 1 mission (agrégée)
 │  VUE_MISSIONS_DETAIL_TRAJETS   │  1 ligne = 1 trajet (détaillé)
