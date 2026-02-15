@@ -1,5 +1,7 @@
 # Projet GPEEC — Cartographie des Emplois et des Effectifs
 
+*Optimisation de vues RH complexes : index composites, Result Cache, extraction Regex — temps de réponse réduit de 45s à < 1s.*
+
 ## Contexte
 
 Refonte et optimisation d'un système de cartographie RH pour un établissement d'enseignement supérieur (~2 000 agents). Le système alimente les tableaux de bord de la DRH pour le pilotage des emplois, effectifs et compétences (GPEEC).
@@ -146,11 +148,26 @@ projets/gpeec/
 
 ## Points techniques notables
 
+**Fonctions PL/SQL dans le SELECT — context switch assumé** — La vue
+appelle ~5 fonctions PL/SQL par ligne (`GET_POPULATION`, `GET_DELEGATION`,
+etc.). En Oracle, chaque appel provoque un context switch SQL → PL/SQL
+qui peut être coûteux sur de gros volumes. Avec ~2 000 agents, l'impact
+est négligeable (< 0.5s total). Sur un volume > 100 000 lignes, il faudrait
+soit utiliser `PRAGMA UDF` (Oracle 12c+) pour réduire le coût du switch,
+soit inliner la logique en SQL pur, soit basculer sur des sous-requêtes
+scalaires corrélées.
+
 **Fonction TABLE avec RESULT_CACHE** — La fonction `GET_DOSSIERS_CTR` retourne l'ensemble des dossiers contractuels via un `UNION` de 4 sources (CDD/CDI, hébergés, vacataires, personnels externes). L'ajout de `RESULT_CACHE` évite de recalculer ce résultat à chaque appel.
 
 **Extraction REGEX depuis champ texte libre** — Le code poste UHA est stocké dans un champ texte non structuré (`TXT_LIBRE`). L'extraction repose sur `REGEXP_SUBSTR` avec un pattern de 61 codes validés. Ce type de contournement est fréquent sur les progiciels RH où le modèle de données ne prévoit pas tous les besoins locaux.
 
 **Classification par règles en cascade** — La fonction `GET_POPULATION` détermine si un agent est E-EC (Enseignant-Chercheur) ou BIATSS via une cascade de tests : flag enseignant, tags dans le texte libre, patterns dans le type de contrat et le grade. L'ordre des tests est critique.
+
+**Sécurité et RGPD** — La vue manipule des données RH à caractère personnel
+(identité, affectation, contrats). L'accès est restreint via des rôles Oracle
+aux seuls agents de la DRH habilités. Aucune donnée sensible (NIR, salaire)
+n'est exposée dans la vue de reporting — seules les données nécessaires au
+pilotage des emplois et effectifs sont restituées.
 
 ---
 
