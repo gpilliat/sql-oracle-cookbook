@@ -1,37 +1,37 @@
+# SQL & PL/SQL Cookbook (Oracle / PostgreSQL)
 
-# SQL & PL/SQL Cookbook
+Recueil de requêtes SQL et PL/SQL issues de mon expérience en environnement universitaire et grands comptes.
+Le contenu est organisé par **projets réels anonymisés** (pas une collection “académique”) : vues décisionnelles, contrôles qualité, migrations de schéma et optimisation.
 
-Recueil de requêtes SQL et PL/SQL issues de mon expérience en environnement universitaire et grands comptes. Chaque requête est commentée, contextualisée et testée sur **Oracle 19c** et/ou **PostgreSQL 14+**.
+- SGBD : **Oracle 19c** (principal) ; certains éléments ont des variantes/équivalents **PostgreSQL 14+**
+- Objectif : documenter des cas concrets (tuning, reporting, intégration), avec contexte et choix techniques
 
-L'objectif n'est pas d'être exhaustif mais de documenter des cas concrets : optimisations réelles, patterns de reporting, solutions à des problèmes rencontrés en production.
+## Projets documentés
 
----
+| Projet | Dossier | Contenu | Ce que ça démontre |
+|---|---|---|---|
+| **GPEEC (RH)** | [`projets/gpeec/`](./projets/gpeec/) | README, schéma/architecture (Mermaid), vues Oracle, index, diagnostic qualité | Vues complexes, optimisation (réécritures, index composites), règles métier RH |
+| **ABYLA-TOS (salles / occupation)** | [`projets/abyla-tos/`](./projets/abyla-tos/) | Migration de schéma, reporting TOS, contrôle qualité | Migration DDL, import régulier, pièges Oracle, contrôles d’intégrité |
+| **DAF-MISSIONS (finance)** | [`projets/daf-missions/`](./projets/daf-missions/) | Vue “360° missions” | CTE multiples, agrégations robustes, cohérence financière, patterns de lisibilité |
+| **QVT-AGENTS (permanents)** | [`projets/qvt-agents/`](./projets/qvt-agents/) | Vue agents + règles métier | Dé-doublonnage, gestion d’historique, sélection “avenant le plus récent” (ROW_NUMBER) |
 
-## Contenu
+> Chaque projet contient son propre `README.md` avec le contexte, les choix, et les fichiers principaux.
 
-| Dossier | Description |
-|---|---|
-| `optimisation/` | Amélioration de performances : réécriture de requêtes, suppression de DISTINCT abusifs, index, EXPLAIN PLAN |
-| `fenetrage/` | Fonctions analytiques : `ROW_NUMBER`, `LAG/LEAD`, `RANK`, `PARTITION BY` |
-| `plsql/` | Procédures stockées, fonctions PL/SQL, `RESULT_CACHE` |
-| `reporting/` | Requêtes décisionnelles : agrégations, pivots, indicateurs (RH, finances, scolarité) |
-| `postgresql/` | Équivalents PostgreSQL, CTE récursives, JSONB |
-| `utils/` | Requêtes utilitaires : dictionnaire Oracle, sessions, droits |
-| `projets/gpeec/` | **Projet complet** : cartographie GPEEC — 4 vues Oracle, 15 fonctions PL/SQL, optimisation et indexation |
-
----
+## Techniques couvertes (exemples)
+- SQL analytique : `ROW_NUMBER`, `RANK`, `LAG/LEAD`, partitionnement
+- Structuration : CTE, découpage “lisible”, conventions d’alias
+- Qualité de données : contrôles croisés, détection d’anomalies, règles métier
+- Performance : réécritures SQL, indexation, réduction de `DISTINCT`, patterns d’agrégation
+- DDL/migration : scripts de migration, pièges (mots réservés, encodage)
 
 ## Conventions
-
 - Chaque fichier `.sql` est autonome et commenté
-- Les données sont anonymisées (noms génériques, pas de données réelles)
-- Le SGBD cible est indiqué en en-tête
-- Formatage lisible : indentation, alias explicites
+- Données et identifiants **anonymisés** (noms génériques, pas de données personnelles)
+- Le SGBD cible est indiqué en en-tête quand pertinent
 
 ## Environnement
-
 | | Version |
 |---|---|
 | Oracle | 19c |
 | PostgreSQL | 14+ |
-| Outils | SQL Developer, pgAdmin, DBeaver |
+| Outils | SQL Developer, DBeaver, pgAdmin |
