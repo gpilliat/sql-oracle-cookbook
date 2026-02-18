@@ -1,7 +1,7 @@
 # SQL & PL/SQL Cookbook (Oracle / PostgreSQL)
 
 Recueil de requêtes SQL et PL/SQL issues de mon expérience en environnement universitaire et grands comptes.
-Le contenu est organisé par **projets réels anonymisés** (pas une collection “académique”) : vues décisionnelles, contrôles qualité, migrations de schéma et optimisation.
+Le contenu est organisé par **projets réels anonymisés** : vues décisionnelles, contrôles qualité, migrations de schéma et optimisation.
 
 - SGBD : **Oracle 19c** (principal) ; certains éléments ont des variantes/équivalents **PostgreSQL 14+**
 - Objectif : documenter des cas concrets (tuning, reporting, intégration), avec contexte et choix techniques
